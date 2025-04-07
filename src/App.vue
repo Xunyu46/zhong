@@ -53,20 +53,19 @@ const showModal = ref(false);
 
 // 创建编辑表单数据
 const editForm = ref({
+  // 学生基本信息
   studentId: leaveApplication.value.studentInfo.studentId,
   name: leaveApplication.value.studentInfo.name,
+  idNumber: leaveApplication.value.studentInfo.idNumber,
+  department: leaveApplication.value.studentInfo.department,
+  team: leaveApplication.value.studentInfo.team,
   phone: leaveApplication.value.studentInfo.phone,
+  // 请假信息
   leaveReason: leaveApplication.value.leaveReason,
   leaveTime: leaveApplication.value.leaveTime,
   approvalTeamLeader: leaveApplication.value.approvalTeamLeader,
-  lastProcessor:
-    leaveApplication.value.processList[
-      leaveApplication.value.processList.length - 1
-    ].operator,
-  lastProcessTime:
-    leaveApplication.value.processList[
-      leaveApplication.value.processList.length - 1
-    ].time,
+  // 处理记录 - 用数组来存储所有处理记录
+  processList: JSON.parse(JSON.stringify(leaveApplication.value.processList)),
 });
 
 const isDetailsExpanded = ref(true);
@@ -86,6 +85,21 @@ const toggleFlow = () => {
 
 // 打开弹窗
 const openModal = () => {
+  // 重新加载数据到编辑表单
+  editForm.value = {
+    studentId: leaveApplication.value.studentInfo.studentId,
+    name: leaveApplication.value.studentInfo.name,
+    idNumber: leaveApplication.value.studentInfo.idNumber,
+    department: leaveApplication.value.studentInfo.department,
+    team: leaveApplication.value.studentInfo.team,
+    phone: leaveApplication.value.studentInfo.phone,
+    leaveReason: leaveApplication.value.leaveReason,
+    leaveTime: leaveApplication.value.leaveTime,
+    approvalTeamLeader: leaveApplication.value.approvalTeamLeader,
+    processList: JSON.parse(JSON.stringify(leaveApplication.value.processList)),
+  };
+
+  // 显示弹窗
   showModal.value = true;
 };
 
@@ -99,6 +113,9 @@ const saveChanges = () => {
   // 更新学生信息
   leaveApplication.value.studentInfo.studentId = editForm.value.studentId;
   leaveApplication.value.studentInfo.name = editForm.value.name;
+  leaveApplication.value.studentInfo.idNumber = editForm.value.idNumber;
+  leaveApplication.value.studentInfo.department = editForm.value.department;
+  leaveApplication.value.studentInfo.team = editForm.value.team;
   leaveApplication.value.studentInfo.phone = editForm.value.phone;
 
   // 更新请假信息
@@ -106,13 +123,8 @@ const saveChanges = () => {
   leaveApplication.value.leaveTime = editForm.value.leaveTime;
   leaveApplication.value.approvalTeamLeader = editForm.value.approvalTeamLeader;
 
-  // 更新最后一条处理记录
-  const lastProcess =
-    leaveApplication.value.processList[
-      leaveApplication.value.processList.length - 1
-    ];
-  lastProcess.operator = editForm.value.lastProcessor;
-  lastProcess.time = editForm.value.lastProcessTime;
+  // 更新所有处理记录
+  leaveApplication.value.processList = editForm.value.processList;
 
   // 关闭弹窗
   closeModal();
@@ -230,19 +242,19 @@ const saveChanges = () => {
                 <td>学号</td>
               </tr>
               <tr class="value-row">
-                <td>202120153</td>
+                <td>{{ leaveApplication.studentInfo.studentId }}</td>
               </tr>
               <tr class="title-row">
                 <td>姓名</td>
               </tr>
               <tr class="value-row">
-                <td>曹谈睿</td>
+                <td>{{ leaveApplication.studentInfo.name }}</td>
               </tr>
               <tr class="title-row">
                 <td>身份证号</td>
               </tr>
               <tr class="value-row">
-                <td>231182200401014519</td>
+                <td>{{ leaveApplication.studentInfo.idNumber }}</td>
               </tr>
               <tr class="title-row">
                 <td>所在部门</td>
@@ -326,6 +338,7 @@ const saveChanges = () => {
           <button class="close-btn" @click="closeModal">×</button>
         </div>
         <div class="modal-body">
+          <h4 class="section-heading">基本信息</h4>
           <div class="form-group">
             <label>学号</label>
             <input type="text" v-model="editForm.studentId" />
@@ -335,9 +348,23 @@ const saveChanges = () => {
             <input type="text" v-model="editForm.name" />
           </div>
           <div class="form-group">
+            <label>身份证号</label>
+            <input type="text" v-model="editForm.idNumber" />
+          </div>
+          <div class="form-group">
+            <label>所在部门</label>
+            <input type="text" v-model="editForm.department" />
+          </div>
+          <div class="form-group">
+            <label>所在中队</label>
+            <input type="text" v-model="editForm.team" />
+          </div>
+          <div class="form-group">
             <label>联系电话</label>
             <input type="text" v-model="editForm.phone" />
           </div>
+
+          <h4 class="section-heading">请假信息</h4>
           <div class="form-group">
             <label>请假事由</label>
             <input type="text" v-model="editForm.leaveReason" />
@@ -350,13 +377,45 @@ const saveChanges = () => {
             <label>审批中队长</label>
             <input type="text" v-model="editForm.approvalTeamLeader" />
           </div>
-          <div class="form-group">
-            <label>最近办理人</label>
-            <input type="text" v-model="editForm.lastProcessor" />
-          </div>
-          <div class="form-group">
-            <label>办理时间</label>
-            <input type="text" v-model="editForm.lastProcessTime" />
+
+          <h4 class="section-heading">处理记录</h4>
+          <div
+            v-for="(process, index) in editForm.processList"
+            :key="index"
+            class="process-edit-section"
+          >
+            <div class="process-header">
+              <span>处理记录 #{{ index + 1 }}</span>
+            </div>
+            <div class="form-group">
+              <label>任务环节</label>
+              <input
+                type="text"
+                v-model="editForm.processList[index].taskNode"
+              />
+            </div>
+            <div class="form-group">
+              <label>办理人</label>
+              <input
+                type="text"
+                v-model="editForm.processList[index].operator"
+              />
+            </div>
+            <div class="form-group">
+              <label>办理意见</label>
+              <input
+                type="text"
+                v-model="editForm.processList[index].opinion"
+              />
+            </div>
+            <div class="form-group">
+              <label>办理结果</label>
+              <input type="text" v-model="editForm.processList[index].result" />
+            </div>
+            <div class="form-group">
+              <label>办理时间</label>
+              <input type="text" v-model="editForm.processList[index].time" />
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -383,7 +442,7 @@ const saveChanges = () => {
 
 .header {
   background-color: #0072bd;
-  background-image: url("http://i.cipuc.edu.cn/tp_fp/resource/image/common/head-blue-bg.png");
+  background-image: url("./assets/head-blue-bg.png");
   background-size: cover;
   background-position: center;
   color: white;
@@ -759,6 +818,30 @@ const saveChanges = () => {
     &:hover {
       background-color: #0088cc;
     }
+  }
+}
+
+.section-heading {
+  font-size: 16px;
+  color: #333;
+  margin: 10px 0 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.process-edit-section {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+
+  .process-header {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #00a0e9;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #ddd;
   }
 }
 </style>
